@@ -42,6 +42,13 @@ class World:
     def food_positions(self) -> frozenset[Position]:
         return self._food_positions
 
+    def collect_food(self) -> bool:
+        """Remove food at the agent's position, returning whether any was found."""
+        if self._agent_position not in self._food_positions:
+            return False
+        self._food_positions = self._food_positions - {self._agent_position}
+        return True
+
     def apply_action(self, action: Action) -> bool:
         """Apply one move, returning whether the agent actually moved."""
         match action:
