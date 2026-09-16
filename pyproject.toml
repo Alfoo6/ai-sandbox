@@ -7,7 +7,9 @@ authors = [
     { name = "Alfoo6", email = "205016296+Alfoo6@users.noreply.github.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "pygame>=2.6.1",
+]
 
 [project.scripts]
 ai-sandbox = "ai_sandbox:main"

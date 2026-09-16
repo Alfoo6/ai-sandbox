@@ -34,6 +34,23 @@ One shared simulation loop supports visual and headless execution. Rendering onl
 reads simulation state and must never influence it, including simulation timing
 or randomness. Prefer simple implementations and minimal dependencies.
 
+## Visual demo
+
+Run `uv run ai-sandbox` (or `python -m ai_sandbox.visual_demo` in an environment
+with the project installed). Pygame provides the window, grid drawing, and keyboard
+events; no assets or additional graphical dependencies are needed.
+
+The demo starts at (12, 12) with food at (11, 12), (13, 12), (12, 11), (12, 13),
+(10, 10), and (14, 14), using `RandomController(seed=42)`. Green circles are food,
+the gold square is the agent, and shaded cells show its radius-2 vision.
+
+The display advances at five simulation ticks per second. SPACE pauses or resumes;
+ESC or closing the window exits. The final state stays visible after termination.
+Visual and headless execution use the same simulation iterator; drawing and pacing
+do not consume controller randomness or alter discrete tick mechanics.
+
+Run tests with `uv run python -m unittest discover -s tests -v`.
+
 ## Future work (outside v0.1)
 
 Neural networks, reinforcement learning, genetic algorithms, multiple agents,

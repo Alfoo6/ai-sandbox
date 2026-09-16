@@ -1,2 +1,4 @@
 def main() -> None:
-    print("Hello from ai-sandbox!")
+    from ai_sandbox.visual_demo import main as run_demo
+
+    run_demo()
