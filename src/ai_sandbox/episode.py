@@ -1,7 +1,9 @@
 """Core v0.1 episode mechanics, independent of how actions are chosen."""
 
-from ai_sandbox.contracts import Action
-from ai_sandbox.world import World
+from typing import cast
+
+from ai_sandbox.contracts import Action, Cell, LocalCells, Observation
+from ai_sandbox.world import Position, World
 
 
 INITIAL_ENERGY = 100
@@ -49,6 +51,28 @@ class Episode:
     @property
     def terminated(self) -> bool:
         return self._terminated
+
+    def observe(self) -> Observation:
+        """Return a radius-2 snapshot, with north at the top and east at right."""
+        agent = self._world.agent_position
+        food = self._world.food_positions
+
+        def cell_at(dx: int, dy: int) -> Cell:
+            x, y = agent.x + dx, agent.y + dy
+            if not (0 <= x < self._world.SIZE and 0 <= y < self._world.SIZE):
+                return Cell.OUT_OF_BOUNDS
+            if dx == 0 and dy == 0:
+                return Cell.EMPTY
+            if Position(x, y) in food:
+                return Cell.FOOD
+            return Cell.EMPTY
+
+        # These fixed ranges produce exactly five rows of five cells.
+        cells = cast(LocalCells, tuple(
+            tuple(cell_at(dx, dy) for dx in range(-2, 3))
+            for dy in range(-2, 3)
+        ))
+        return Observation(cells=cells, energy=self._energy)
 
     def step(self, action: Action) -> None:
         """Complete one tick; reject further steps after termination."""
