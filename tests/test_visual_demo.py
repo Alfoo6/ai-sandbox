@@ -8,11 +8,11 @@ from unittest.mock import patch
 
 import pygame
 
-from ai_sandbox.controllers import RandomController
+from ai_sandbox.controllers import RandomController, RuleBasedController
 from ai_sandbox.rendering.pygame_renderer import PygameRenderer, WINDOW_SIZE
 from ai_sandbox.runner import episode_ticks, run_episode
 from ai_sandbox.scenarios import create_demo_episode
-from ai_sandbox.visual_demo import run_visual_episode
+from ai_sandbox.visual_demo import main, run_visual_episode
 from ai_sandbox.world import Position
 
 
@@ -32,6 +32,21 @@ class VisualDemoTests(unittest.TestCase):
             Position(11, 12), Position(13, 12), Position(12, 11),
             Position(12, 13), Position(10, 10), Position(14, 14),
         })
+
+    def test_main_runs_demo_with_seeded_rule_based_controller(self) -> None:
+        with (
+            patch(
+                "ai_sandbox.visual_demo.RuleBasedController",
+                wraps=RuleBasedController,
+            ) as controller_type,
+            patch("ai_sandbox.visual_demo.run_visual_episode") as run,
+        ):
+            main()
+
+        controller_type.assert_called_once_with(seed=42)
+        episode, controller = run.call_args.args
+        self.assertEqual(episode.world.agent_position, Position(12, 12))
+        self.assertIsInstance(controller, RuleBasedController)
 
     def test_rendering_does_not_change_state_or_reproducibility(self) -> None:
         episode = create_demo_episode()

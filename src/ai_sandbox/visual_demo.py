@@ -1,8 +1,8 @@
-"""Watch one manually defined episode with the random controller."""
+"""Watch the fixed demo episode with the rule-based controller."""
 
 import pygame
 
-from ai_sandbox.controllers import RandomController
+from ai_sandbox.controllers import RandomController, RuleBasedController
 from ai_sandbox.episode import Episode
 from ai_sandbox.rendering.pygame_renderer import PygameRenderer, WINDOW_SIZE
 from ai_sandbox.runner import episode_ticks
@@ -50,7 +50,7 @@ def run_visual_episode(episode: Episode, controller: RandomController) -> None:
 
 
 def main() -> None:
-    run_visual_episode(create_demo_episode(), RandomController(seed=42))
+    run_visual_episode(create_demo_episode(), RuleBasedController(seed=42))
 
 
 if __name__ == "__main__":
