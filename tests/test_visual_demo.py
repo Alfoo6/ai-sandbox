@@ -11,7 +11,8 @@ import pygame
 from ai_sandbox.controllers import RandomController
 from ai_sandbox.rendering.pygame_renderer import PygameRenderer, WINDOW_SIZE
 from ai_sandbox.runner import episode_ticks, run_episode
-from ai_sandbox.visual_demo import create_demo_episode, run_visual_episode
+from ai_sandbox.scenarios import create_demo_episode
+from ai_sandbox.visual_demo import run_visual_episode
 from ai_sandbox.world import Position
 
 

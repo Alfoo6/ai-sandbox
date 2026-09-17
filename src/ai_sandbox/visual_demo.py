@@ -6,20 +6,10 @@ from ai_sandbox.controllers import RandomController
 from ai_sandbox.episode import Episode
 from ai_sandbox.rendering.pygame_renderer import PygameRenderer, WINDOW_SIZE
 from ai_sandbox.runner import episode_ticks
-from ai_sandbox.world import Position, World
+from ai_sandbox.scenarios import create_demo_episode
 
 
 TICK_INTERVAL_MS = 200
-
-
-def create_demo_episode() -> Episode:
-    return Episode(World(
-        agent_position=Position(12, 12),
-        food_positions={
-            Position(11, 12), Position(13, 12), Position(12, 11),
-            Position(12, 13), Position(10, 10), Position(14, 14),
-        },
-    ))
 
 
 def run_visual_episode(episode: Episode, controller: RandomController) -> None:
