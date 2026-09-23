@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from collections.abc import Iterator
 
-from ai_sandbox.controllers import RandomController
+from ai_sandbox.contracts import Controller
 from ai_sandbox.episode import Episode
 
 
@@ -15,7 +15,7 @@ class EpisodeResult:
     final_energy: int
 
 
-def episode_ticks(episode: Episode, controller: RandomController) -> Iterator[None]:
+def episode_ticks(episode: Episode, controller: Controller) -> Iterator[None]:
     """Advance one complete simulation tick per iteration, without pacing or I/O."""
     while not episode.terminated:
         observation = episode.observe()
@@ -24,7 +24,7 @@ def episode_ticks(episode: Episode, controller: RandomController) -> Iterator[No
         yield
 
 
-def run_episode(episode: Episode, controller: RandomController) -> EpisodeResult:
+def run_episode(episode: Episode, controller: Controller) -> EpisodeResult:
     """Advance the supplied episode to termination and snapshot its metrics."""
     for _ in episode_ticks(episode, controller):
         pass

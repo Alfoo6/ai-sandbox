@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 from enum import Enum
+from typing import Protocol
 
 
 class Action(Enum):
@@ -45,3 +46,9 @@ class Observation:
                 raise ValueError("each row must contain exactly five cells")
             if any(not isinstance(cell, Cell) for cell in row):
                 raise TypeError("each cell must be a Cell member")
+
+
+class Controller(Protocol):
+    """Choose an action using only an observation."""
+
+    def choose_action(self, observation: Observation) -> Action: ...

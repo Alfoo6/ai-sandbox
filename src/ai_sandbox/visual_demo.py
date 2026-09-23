@@ -2,7 +2,8 @@
 
 import pygame
 
-from ai_sandbox.controllers import RandomController, RuleBasedController
+from ai_sandbox.contracts import Controller
+from ai_sandbox.controllers import RuleBasedController
 from ai_sandbox.episode import Episode
 from ai_sandbox.rendering.pygame_renderer import PygameRenderer, WINDOW_SIZE
 from ai_sandbox.runner import episode_ticks
@@ -12,7 +13,7 @@ from ai_sandbox.scenarios import create_demo_episode
 TICK_INTERVAL_MS = 200
 
 
-def run_visual_episode(episode: Episode, controller: RandomController) -> None:
+def run_visual_episode(episode: Episode, controller: Controller) -> None:
     """Pace the shared simulation loop and keep the window open until dismissed."""
     pygame.display.init()
     pygame.font.init()
