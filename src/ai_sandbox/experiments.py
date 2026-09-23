@@ -44,6 +44,14 @@ class ResourceComparison:
     ties: int
 
 
+@dataclass(frozen=True)
+class PairedComparison:
+    scenarios: int
+    first_wins: int
+    second_wins: int
+    ties: int
+
+
 def run_experiment(
     scenario_seeds: Iterable[int],
     controller_factory: Callable[[int], Controller],
@@ -89,6 +97,23 @@ def compare_resources(
     second_results: Iterable[ExperimentResult],
 ) -> ResourceComparison:
     """Count resource wins and ties for matching scenario seeds."""
+    comparison = compare_paired_metric(
+        first_results, second_results, lambda result: result.resources_collected
+    )
+    return ResourceComparison(
+        comparison.scenarios,
+        comparison.first_wins,
+        comparison.second_wins,
+        comparison.ties,
+    )
+
+
+def compare_paired_metric(
+    first_results: Iterable[ExperimentResult],
+    second_results: Iterable[ExperimentResult],
+    metric: Callable[[ExperimentResult], int],
+) -> PairedComparison:
+    """Count wins and ties by scenario seed for one integer episode metric."""
     first = tuple(first_results)
     second = tuple(second_results)
     first_by_seed = {result.scenario_seed: result for result in first}
@@ -100,12 +125,12 @@ def compare_resources(
 
     first_wins = second_wins = ties = 0
     for seed, first_result in first_by_seed.items():
-        first_resources = first_result.resources_collected
-        second_resources = second_by_seed[seed].resources_collected
-        if first_resources > second_resources:
+        first_value = metric(first_result)
+        second_value = metric(second_by_seed[seed])
+        if first_value > second_value:
             first_wins += 1
-        elif first_resources < second_resources:
+        elif first_value < second_value:
             second_wins += 1
         else:
             ties += 1
-    return ResourceComparison(len(first_by_seed), first_wins, second_wins, ties)
+    return PairedComparison(len(first_by_seed), first_wins, second_wins, ties)

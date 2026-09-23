@@ -7,8 +7,9 @@ from unittest.mock import patch
 from ai_sandbox.contracts import Action, Observation
 from ai_sandbox.controllers import RandomController, RuleBasedController
 from ai_sandbox.experiments import (
-    ExperimentResult, ExperimentSummary, MetricSummary, ResourceComparison,
-    compare_resources, run_experiment, summarize_results,
+    ExperimentResult, ExperimentSummary, MetricSummary, PairedComparison,
+    ResourceComparison, compare_paired_metric, compare_resources, run_experiment,
+    summarize_results,
 )
 from ai_sandbox.scenarios import create_random_episode
 
@@ -146,6 +147,22 @@ class ExperimentTests(unittest.TestCase):
             with self.subTest(duplicate_first=len(duplicate_first) == 2):
                 with self.assertRaisesRegex(ValueError, "duplicate scenario seeds"):
                     compare_resources(duplicate_first, duplicate_second)
+
+    def test_paired_metric_counts_wins_losses_and_ties_by_seed(self) -> None:
+        first = (
+            ExperimentResult(2, "First", 150, 0, 0, 0),
+            ExperimentResult(0, "First", 100, 0, 0, 0),
+            ExperimentResult(1, "First", 125, 0, 0, 0),
+        )
+        second = (
+            ExperimentResult(0, "Second", 90, 0, 0, 0),
+            ExperimentResult(1, "Second", 150, 0, 0, 0),
+            ExperimentResult(2, "Second", 150, 0, 0, 0),
+        )
+        self.assertEqual(
+            compare_paired_metric(first, second, lambda result: result.ticks_survived),
+            PairedComparison(3, 1, 1, 1),
+        )
 
     def test_empty_aggregate_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
