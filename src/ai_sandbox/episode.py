@@ -2,12 +2,12 @@
 
 from typing import cast
 
+from ai_sandbox.constants import MAX_ENERGY
 from ai_sandbox.contracts import Action, Cell, LocalCells, Observation
 from ai_sandbox.world import Position, World
 
 
-INITIAL_ENERGY = 100
-MAX_ENERGY = 100
+INITIAL_ENERGY = MAX_ENERGY
 FOOD_ENERGY = 25
 TICK_ENERGY_COST = 1
 MAX_TICKS = 500
