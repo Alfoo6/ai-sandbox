@@ -2,8 +2,8 @@
 - Prefer simple, understandable implementations.
 - Explain important design decisions.
 - Do not introduce dependencies without justification.
-- Treat README.md as the source of truth for v0.1 scope and mechanics; keep
-  advanced systems listed as future work out of v0.1.
+- Treat README.md as the source of truth for project scope and mechanics; keep
+  later milestones distinct from the v0.1 simulation scope.
 - Keep simulation logic independent from rendering.
 - Use one shared simulation loop for visual and headless execution. Rendering
   must never influence simulation state, timing, or randomness.
