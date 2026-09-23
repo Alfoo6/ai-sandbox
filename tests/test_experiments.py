@@ -7,7 +7,8 @@ from unittest.mock import patch
 from ai_sandbox.contracts import Action, Observation
 from ai_sandbox.controllers import RandomController, RuleBasedController
 from ai_sandbox.experiments import (
-    ExperimentResult, ExperimentSummary, run_experiment, summarize_results,
+    ExperimentResult, ExperimentSummary, MetricSummary, ResourceComparison,
+    compare_resources, run_experiment, summarize_results,
 )
 from ai_sandbox.scenarios import create_random_episode
 
@@ -86,15 +87,65 @@ class ExperimentTests(unittest.TestCase):
                     )
         self.assertEqual(scenarios[:2], scenarios[2:])
 
-    def test_aggregate_arithmetic_means(self) -> None:
+    def test_aggregate_mean_median_minimum_and_maximum_with_even_count(self) -> None:
         results = (
             ExperimentResult(0, "Test", 100, 1, 80, 0),
             ExperimentResult(1, "Test", 150, 3, 120, 10),
         )
         self.assertEqual(
             summarize_results(results),
-            ExperimentSummary(2, 125.0, 2.0, 100.0, 5.0),
+            ExperimentSummary(
+                episodes=2,
+                ticks_survived=MetricSummary(125.0, 125.0, 100, 150),
+                resources_collected=MetricSummary(2.0, 2.0, 1, 3),
+                distance_travelled=MetricSummary(100.0, 100.0, 80, 120),
+                final_energy=MetricSummary(5.0, 5.0, 0, 10),
+            ),
         )
+
+    def test_aggregate_median_with_odd_count(self) -> None:
+        results = (
+            ExperimentResult(0, "Test", 100, 0, 80, 0),
+            ExperimentResult(1, "Test", 200, 5, 180, 20),
+            ExperimentResult(2, "Test", 120, 1, 100, 10),
+        )
+        summary = summarize_results(results)
+        self.assertEqual(summary.ticks_survived.median, 120)
+        self.assertEqual(summary.resources_collected.median, 1)
+        self.assertEqual(summary.distance_travelled.median, 100)
+        self.assertEqual(summary.final_energy.median, 10)
+
+    def test_resource_comparison_matches_seeds_not_positions(self) -> None:
+        first = (
+            ExperimentResult(0, "First", 100, 2, 0, 0),
+            ExperimentResult(1, "First", 100, 1, 0, 0),
+            ExperimentResult(2, "First", 100, 3, 0, 0),
+            ExperimentResult(3, "First", 100, 0, 0, 0),
+        )
+        second = (
+            ExperimentResult(3, "Second", 100, 0, 0, 0),
+            ExperimentResult(2, "Second", 100, 1, 0, 0),
+            ExperimentResult(1, "Second", 100, 2, 0, 0),
+            ExperimentResult(0, "Second", 100, 1, 0, 0),
+        )
+        self.assertEqual(compare_resources(first, second), ResourceComparison(4, 2, 1, 1))
+
+    def test_resource_comparison_rejects_mismatched_seed_sets(self) -> None:
+        first = (ExperimentResult(0, "First", 100, 1, 0, 0),)
+        second = (ExperimentResult(1, "Second", 100, 1, 0, 0),)
+        with self.assertRaisesRegex(ValueError, "matching scenario seeds"):
+            compare_resources(first, second)
+
+    def test_resource_comparison_rejects_duplicate_seeds_on_either_side(self) -> None:
+        first = (ExperimentResult(0, "First", 100, 1, 0, 0),)
+        second = (ExperimentResult(0, "Second", 100, 1, 0, 0),)
+        for duplicate_first, duplicate_second in (
+            (first + first, second),
+            (first, second + second),
+        ):
+            with self.subTest(duplicate_first=len(duplicate_first) == 2):
+                with self.assertRaisesRegex(ValueError, "duplicate scenario seeds"):
+                    compare_resources(duplicate_first, duplicate_second)
 
     def test_empty_aggregate_is_rejected(self) -> None:
         with self.assertRaises(ValueError):

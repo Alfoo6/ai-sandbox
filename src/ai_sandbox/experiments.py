@@ -2,7 +2,7 @@
 
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
-from statistics import fmean
+from statistics import fmean, median
 
 from ai_sandbox.contracts import Controller
 from ai_sandbox.runner import run_episode
@@ -20,12 +20,28 @@ class ExperimentResult:
 
 
 @dataclass(frozen=True)
+class MetricSummary:
+    mean: float
+    median: float
+    minimum: int
+    maximum: int
+
+
+@dataclass(frozen=True)
 class ExperimentSummary:
     episodes: int
-    mean_ticks_survived: float
-    mean_resources_collected: float
-    mean_distance_travelled: float
-    mean_final_energy: float
+    ticks_survived: MetricSummary
+    resources_collected: MetricSummary
+    distance_travelled: MetricSummary
+    final_energy: MetricSummary
+
+
+@dataclass(frozen=True)
+class ResourceComparison:
+    scenarios: int
+    first_wins: int
+    second_wins: int
+    ties: int
 
 
 def run_experiment(
@@ -50,14 +66,46 @@ def run_experiment(
 
 
 def summarize_results(results: Iterable[ExperimentResult]) -> ExperimentSummary:
-    """Compute arithmetic means over individual episode results."""
+    """Compute mean, median, minimum, and maximum for each episode metric."""
     episodes = tuple(results)
     if not episodes:
         raise ValueError("cannot summarize an empty experiment")
     return ExperimentSummary(
         episodes=len(episodes),
-        mean_ticks_survived=fmean(result.ticks_survived for result in episodes),
-        mean_resources_collected=fmean(result.resources_collected for result in episodes),
-        mean_distance_travelled=fmean(result.distance_travelled for result in episodes),
-        mean_final_energy=fmean(result.final_energy for result in episodes),
+        ticks_survived=_summarize_metric(result.ticks_survived for result in episodes),
+        resources_collected=_summarize_metric(result.resources_collected for result in episodes),
+        distance_travelled=_summarize_metric(result.distance_travelled for result in episodes),
+        final_energy=_summarize_metric(result.final_energy for result in episodes),
     )
+
+
+def _summarize_metric(values: Iterable[int]) -> MetricSummary:
+    numbers = tuple(values)
+    return MetricSummary(fmean(numbers), median(numbers), min(numbers), max(numbers))
+
+
+def compare_resources(
+    first_results: Iterable[ExperimentResult],
+    second_results: Iterable[ExperimentResult],
+) -> ResourceComparison:
+    """Count resource wins and ties for matching scenario seeds."""
+    first = tuple(first_results)
+    second = tuple(second_results)
+    first_by_seed = {result.scenario_seed: result for result in first}
+    second_by_seed = {result.scenario_seed: result for result in second}
+    if len(first_by_seed) != len(first) or len(second_by_seed) != len(second):
+        raise ValueError("duplicate scenario seeds in comparison")
+    if first_by_seed.keys() != second_by_seed.keys():
+        raise ValueError("comparison requires matching scenario seeds")
+
+    first_wins = second_wins = ties = 0
+    for seed, first_result in first_by_seed.items():
+        first_resources = first_result.resources_collected
+        second_resources = second_by_seed[seed].resources_collected
+        if first_resources > second_resources:
+            first_wins += 1
+        elif first_resources < second_resources:
+            second_wins += 1
+        else:
+            ties += 1
+    return ResourceComparison(len(first_by_seed), first_wins, second_wins, ties)
