@@ -4,7 +4,7 @@ from itertools import count
 import os
 import random
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import pygame
 
@@ -88,6 +88,23 @@ class VisualDemoTests(unittest.TestCase):
         self.assertEqual(episode.completed_ticks, 0)
         next(ticks)
         self.assertEqual(episode.completed_ticks, 1)
+
+    def test_scenario_hud_shows_diagnostics_and_finished_status(self) -> None:
+        episode = create_demo_episode()
+        font = Mock()
+        font.render.return_value = pygame.Surface((1, 1))
+        with patch("pygame.font.Font", return_value=font):
+            renderer = PygameRenderer(pygame.Surface(WINDOW_SIZE), scenario_seed=100)
+        renderer.draw(episode, "NeuralController", False)
+        lines = [entry.args[0] for entry in font.render.call_args_list]
+        self.assertIn("Scenario: 100", lines[0])
+        self.assertIn("Running", lines[0])
+        self.assertIn("Ticks: 0   Energy: 100", lines[1])
+        self.assertIn("Resources: 0", lines[2])
+        run_episode(episode, RandomController(42))
+        font.reset_mock()
+        renderer.draw(episode, "NeuralController", True)
+        self.assertIn("Finished", font.render.call_args_list[0].args[0])
 
     def test_space_pauses_and_resumes(self) -> None:
         episode = create_demo_episode()

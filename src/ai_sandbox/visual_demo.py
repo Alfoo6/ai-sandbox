@@ -13,14 +13,16 @@ from ai_sandbox.scenarios import create_demo_episode
 TICK_INTERVAL_MS = 200
 
 
-def run_visual_episode(episode: Episode, controller: Controller) -> None:
+def run_visual_episode(
+    episode: Episode, controller: Controller, *, scenario_seed: int | None = None,
+) -> None:
     """Pace the shared simulation loop and keep the window open until dismissed."""
     pygame.display.init()
     pygame.font.init()
     try:
         surface = pygame.display.set_mode(WINDOW_SIZE)
         pygame.display.set_caption("AI Sandbox")
-        renderer = PygameRenderer(surface)
+        renderer = PygameRenderer(surface, scenario_seed=scenario_seed)
         clock = pygame.time.Clock()
         ticks = episode_ticks(episode, controller)
         paused = False

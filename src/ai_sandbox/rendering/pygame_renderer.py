@@ -12,9 +12,12 @@ WINDOW_SIZE = (GRID_PIXELS, GRID_PIXELS + 130)
 
 
 class PygameRenderer:
-    def __init__(self, surface: pygame.Surface) -> None:
+    def __init__(
+        self, surface: pygame.Surface, *, scenario_seed: int | None = None,
+    ) -> None:
         self._surface = surface
         self._font = pygame.font.Font(None, 24)
+        self._scenario_seed = scenario_seed
 
     def draw(self, episode: Episode, controller_name: str, paused: bool) -> None:
         """Draw current state without changing it, including a clipped vision area."""
@@ -39,8 +42,9 @@ class PygameRenderer:
         pygame.draw.rect(surface, (245, 190, 80), agent_rect)
 
         status = "Finished" if episode.terminated else "Paused" if paused else "Running"
+        scenario = "" if self._scenario_seed is None else f"  |  Scenario: {self._scenario_seed}"
         lines = (
-            f"{controller_name}  |  {status}",
+            f"{controller_name}  |  {status}{scenario}",
             f"Ticks: {episode.completed_ticks}   Energy: {episode.energy}",
             f"Resources: {episode.resources_collected}   Distance: {episode.distance_travelled}",
             "SPACE: pause/resume   ESC: exit   |   5 ticks/sec",

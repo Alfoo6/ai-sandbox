@@ -87,8 +87,29 @@ ESC or closing the window exits. The final state stays visible after termination
 Visual and headless execution use the same simulation iterator; drawing and pacing
 do not consume controller randomness or alter discrete tick mechanics.
 
-Run tests with `uv run python -m unittest discover -s tests -v`. At this
-checkpoint, the full suite contains 130 passing tests.
+Run tests with `uv run python -m unittest discover -s tests -v`.
+
+## Watch the evolved champion (v0.3.7)
+
+```bash
+uv run python scripts/watch_evolved.py --scenario 0
+uv run python scripts/watch_evolved.py --scenario 3
+uv run python scripts/watch_evolved.py --scenario 100
+uv run python scripts/watch_evolved.py --scenario 150
+```
+
+The scenario defaults to `0`. Each launch reconstructs the same champion once:
+population 40, 8 elites, training seeds `(0, 1, 2, 3, 4)`, mutation scale `0.05`,
+30 generations, training seed `42`. Training takes place before the window opens
+and verifies final best fitness `125.0`; the selected viewing seed never affects
+training. No saved champion file is required.
+
+Compare training seed `0` or `3` with unseen held-out seed `100` or `150` to
+observe how the same policy behaves on different food layouts. The existing
+viewer shows the scenario seed, ticks, energy, resources, and Running/Paused/Finished
+status at five ticks per second. SPACE pauses/resumes; ESC or closing the window
+exits. The final frame remains visible after termination. HUD information is only
+for the observer; the controller still receives its original local observation.
 
 ## Reproducing experiments
 
@@ -132,7 +153,7 @@ The main open question is how to improve generalization beyond a very small fixe
 training set. Possible investigations include more diverse training scenarios,
 changing scenario sets during evolution, improving experimental methodology with
 train/validation/test separation, population size, mutation scale, generation
-count, alternative fitness designs, visualizing the evolved champion's behavior,
-and champion persistence. None is established as the solution yet. Later work may
+count, alternative fitness designs, and champion persistence. None is established
+as the solution yet. Later work may
 compare evolutionary learning with reinforcement learning; reinforcement learning
 is not implemented. Multiple agents and reproduction remain future work.
